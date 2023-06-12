@@ -1,23 +1,16 @@
 console.log("Hello Todo App!");
-
+import { checkBoxCreate, leseStorage, newTodoUL, saveStorage } from "./lib.js"
 let todos = [];
 const deleteTodosButton = document.querySelector("#delete-todos");
 const addTodoBtn = document.querySelector("#add-todo");
 const todoListEl = document.querySelector("#todo-list");
 
-function readTodosFromLocalStorage() {
-  const todosFromStorage = localStorage.getItem("todos");
-  if (todosFromStorage !== null) {
-    todos = JSON.parse(todosFromStorage);
-  }
-}
 
-function saveTodosToLocalStorage() {
-  localStorage.setItem("todos", JSON.stringify(todos));
-}
+
+
 
 function addNewTodo() {
-  const newTodoEl = document.querySelector("#new-todo");
+  const newTodoEl = newTodoUL("#new-todo");
   const newTodoText = newTodoEl.value.trim();
 
   // length check
@@ -37,44 +30,26 @@ function addNewTodo() {
   todos.push(newTodo);
 
   renderTodos();
-  saveTodosToLocalStorage();
+  saveStorage(todos);
 
   newTodoEl.value = "";
 }
 addTodoBtn.addEventListener("click", addNewTodo);
 
 function renderTodos() {
-  const todoListEl = document.querySelector("#todo-list");
+  newTodoUL("#todo-list");
   todoListEl.innerHTML = "";
 
   todos.forEach(function (currentTodo) {
-    const newTodoLiEl = document.createElement("li");
+    checkBoxCreate(currentTodo);
 
-    const todoCheckboxEl = document.createElement("input");
-    todoCheckboxEl.setAttribute("type", "checkbox");
-    todoCheckboxEl.checked = currentTodo.done;
-    newTodoLiEl.appendChild(todoCheckboxEl);
 
-    const textNode = document.createTextNode(currentTodo.todo);
-    newTodoLiEl.append(textNode);
 
-    if (currentTodo.done === true) {
-      newTodoLiEl.classList.add("done");
-    }
 
-    newTodoLiEl.todo = currentTodo;
 
-    const filterValue = getFilterValue();
-    if (filterValue === "done") {
-      newTodoLiEl.hidden = true;
-    }
-
-    todoListEl.appendChild(newTodoLiEl);
-  });
-
-  filterTodos();
+    filterTodos();
+  })
 }
-
 function isDuplicate(todo) {
   todo = todo.toLowerCase();
 
@@ -98,13 +73,14 @@ function toggleTodoState(event) {
     checkbox.parentElement.todo.done = false;
   }
 
-  saveTodosToLocalStorage();
+  saveStorage(todos);
 }
 
 const todoFilterEl = document.querySelector("#todo-filter");
 todoFilterEl.addEventListener("change", filterTodos);
 function filterTodos() {
-  const filterValue = getFilterValue();
+  const filterValue = document.querySelector('#todo-filter input[type="radio"]:checked')
+    .value;
 
   const todoListEl = document.querySelector("#todo-list");
   for (let i = 0; i < todoListEl.children.length; i++) {
@@ -119,20 +95,17 @@ function filterTodos() {
   }
 }
 
-function getFilterValue() {
-  return document.querySelector('#todo-filter input[type="radio"]:checked')
-    .value;
-}
+
 
 function deleteDoneTodos() {
   todos = todos.filter((todo) => todo.done === false);
-  saveTodosToLocalStorage();
+  saveStorage(todos);
   renderTodos();
 }
 deleteTodosButton.addEventListener("click", deleteDoneTodos);
 
 function initTodoApp() {
-  readTodosFromLocalStorage();
+  todos = leseStorage();
   renderTodos();
 }
 initTodoApp();
